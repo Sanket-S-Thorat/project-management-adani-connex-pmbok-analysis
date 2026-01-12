@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adani Connex | Strategic Board War Room</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #0b0f19; /* Deep Navy/Black */
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(30, 41, 59, 0.5);
+        }
+        .map-marker {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .map-marker:hover circle {
+            r: 8;
+            stroke: white;
+            stroke-width: 2px;
+        }
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.5); }
+            100% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- Icons ---
+        const IconTrendingUp = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>;
+        const IconAlertTriangle = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
+        const IconServer = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>;
+        const IconDollarSign = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>;
+        const IconActivity = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>;
+        const IconMapPin = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
+
+        // --- Data Models ---
+        const scenarios = {
+            base: {
+                label: "Current Trajectory (Base Case)",
+                color: "red",
+                kpi: { capacity: "150 MW", efficiency: "₹108 Cr/MW", time: "32 Months", pnl: "₹350 Cr" },
+                financialGraph: [350, 800, 1500, 2800, 4500, 8000],
+                risk: { regulatory: 70, supply: 60 }
+            },
+            optimized: {
+                label: "Strategic Optimization Plan",
+                color: "emerald",
+                kpi: { capacity: "500 MW (Accelerated)", efficiency: "₹95 Cr/MW", time: "24 Months", pnl: "₹550 Cr" },
+                financialGraph: [350, 950, 1900, 3400, 5800, 9200],
+                risk: { regulatory: 30, supply: 20 }
+            }
+        };
+
+        const locations = [
+            { id: 1, name: "Noida", x: 40, y: 25, status: "red", mw: "50 MW", details: "Land acquisition delays. Regulatory hurdles high.", radar: [30, 40, 20, 90, 80] }, // Progress, Budget, Reg, Power, Demand
+            { id: 2, name: "Mumbai", x: 25, y: 55, status: "amber", mw: "80 MW", details: "Construction on schedule. Power grid negotiation ongoing.", radar: [60, 70, 50, 40, 95] },
+            { id: 3, name: "Hyderabad", x: 45, y: 60, status: "green", mw: "40 MW", details: "Phase 1 Live. Expansion planning approved.", radar: [90, 85, 90, 90, 75] },
+            { id: 4, name: "Visakhapatnam", x: 55, y: 65, status: "red", mw: "200 MW", details: "Environmental clearance pending. NGO opposition.", radar: [10, 50, 10, 80, 70] },
+            { id: 5, name: "Chennai", x: 45, y: 80, status: "green", mw: "50 MW", details: "Operational Hub. Subsea cable integration live.", radar: [100, 95, 100, 100, 85] }
+        ];
+
+        // --- Components ---
+
+        const ChartComponent = ({ type, data, options, id }) => {
+            const chartRef = useRef(null);
+            const canvasRef = useRef(null);
+
+            useEffect(() => {
+                if (canvasRef.current) {
+                    if (chartRef.current) chartRef.current.destroy();
+                    const ctx = canvasRef.current.getContext('2d');
+                    chartRef.current = new Chart(ctx, {
+                        type: type,
+                        data: data,
+                        options: {
+                            ...options,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: { duration: 1000, easing: 'easeOutQuart' }
+                        }
+                    });
+                }
+            }, [data, options, type]);
+
+            return <div className="h-full w-full"><canvas ref={canvasRef} id={id}></canvas></div>;
+        };
+
+        const IndiaMap = ({ onLocationSelect, selectedLoc }) => {
+            // Simplified polygon for visual representation
+            const indiaPath = "M 35 5 L 55 5 L 65 20 L 75 25 L 60 40 L 55 60 L 45 90 L 35 60 L 20 45 L 20 30 L 35 5 Z"; 
+            
+            return (
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <svg viewBox="0 0 100 100" className="h-full w-full drop-shadow-2xl">
+                        {/* Abstract India Shape */}
+                        <path d={indiaPath} fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
+                        
+                        {/* Connecting Lines */}
+                        <line x1="45" y1="80" x2="45" y2="60" stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="2" opacity="0.5" />
+                        <line x1="45" y1="60" x2="25" y2="55" stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="2" opacity="0.5" />
+                        <line x1="45" y1="60" x2="55" y2="65" stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="2" opacity="0.5" />
+                        <line x1="45" y1="60" x2="40" y2="25" stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="2" opacity="0.5" />
+
+                        {/* Locations */}
+                        {locations.map(loc => (
+                            <g key={loc.id} className="map-marker" onClick={() => onLocationSelect(loc)}>
+                                <circle 
+                                    cx={loc.x} cy={loc.y} r={selectedLoc?.id === loc.id ? 4 : 2} 
+                                    fill={loc.status === 'red' ? '#ef4444' : loc.status === 'green' ? '#22c55e' : '#f59e0b'}
+                                    className={selectedLoc?.id === loc.id ? "animate-pulse" : ""}
+                                />
+                                <text x={loc.x + 4} y={loc.y + 1} fontSize="3" fill="#94a3b8" className="select-none font-bold">
+                                    {loc.name.toUpperCase()}
+                                </text>
+                                {/* Ripple Effect for Red status */}
+                                {loc.status === 'red' && (
+                                    <circle cx={loc.x} cy={loc.y} r="6" fill="transparent" stroke="#ef4444" strokeWidth="0.2" opacity="0.5">
+                                        <animate attributeName="r" from="2" to="8" dur="1.5s" repeatCount="indefinite" />
+                                        <animate attributeName="opacity" from="0.8" to="0" dur="1.5s" repeatCount="indefinite" />
+                                    </circle>
+                                )}
+                            </g>
+                        ))}
+                    </svg>
+                    <div className="absolute bottom-2 right-2 text-[10px] text-slate-500">
+                        *Stylized Schematic Representation
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [scenario, setScenario] = useState('base');
+            const [selectedLocation, setSelectedLocation] = useState(locations[2]); // Default Hyderabad
+            const currentData = scenarios[scenario];
+
+            // --- Chart Configurations ---
+            
+            // 1. Financial Projection (Line)
+            const financialChartData = {
+                labels: ['2025', '2026', '2027', '2028', '2029', '2030'],
+                datasets: [
+                    {
+                        label: 'Projected Revenue (₹ Cr)',
+                        data: currentData.financialGraph,
+                        borderColor: scenario === 'base' ? '#ef4444' : '#22c55e',
+                        backgroundColor: scenario === 'base' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4
+                    }
+                ]
+            };
+
+            // 2. Radar Chart for Location Deep Dive
+            const radarData = {
+                labels: ['Construction', 'Budget', 'Regulatory', 'Grid Power', 'Demand'],
+                datasets: [{
+                    label: `${selectedLocation.name} Health Score`,
+                    data: selectedLocation.radar,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#3b82f6',
+                }]
+            };
+
+            // 3. Capex Allocation (Doughnut)
+            const capexData = {
+                labels: ['Civil Infra', 'Power Systems', 'Cooling (MEP)', 'Land', 'Soft Costs'],
+                datasets: [{
+                    data: [35, 30, 20, 10, 5],
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#64748b'],
+                    borderWidth: 0
+                }]
+            };
+
+            const toggleScenario = () => {
+                setScenario(prev => prev === 'base' ? 'optimized' : 'base');
+            };
+
+            return (
+                <div className="min-h-screen p-6 text-slate-200">
+                    
+                    {/* --- HEADER & SCENARIO TOGGLE --- */}
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <div>
+                            <h1 className="text-4xl font-black text-white tracking-tight">ADANI<span className="text-blue-500">CONNEX</span></h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs bg-slate-800 px-2 py-0.5 rounded border border-slate-700">CONFIDENTIAL</span>
+                                <span className="text-xs text-slate-400 uppercase tracking-widest">Board of Directors Strategy Review</span>
+                            </div>
+                        </div>
+
+                        {/* Scenario Switcher */}
+                        <div className="flex items-center gap-4 bg-slate-800/50 p-2 rounded-xl border border-slate-700/50 backdrop-blur-sm">
+                            <span className={`text-xs font-bold uppercase ${scenario === 'base' ? 'text-red-400' : 'text-slate-500'}`}>Current Path</span>
+                            <div 
+                                onClick={toggleScenario}
+                                className={`w-14 h-7 rounded-full p-1 cursor-pointer transition-colors duration-300 ${scenario === 'base' ? 'bg-slate-700' : 'bg-emerald-600'}`}
+                            >
+                                <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${scenario === 'base' ? 'translate-x-0' : 'translate-x-7'}`}></div>
+                            </div>
+                            <span className={`text-xs font-bold uppercase ${scenario === 'optimized' ? 'text-emerald-400' : 'text-slate-500'}`}>Optimization Plan</span>
+                        </div>
+                    </div>
+
+                    {/* --- KPI ROW --- */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <KPICard title="Op. Capacity" value={currentData.kpi.capacity} icon={IconServer} trend={scenario === 'optimized' ? "On Track" : "-70% Gap"} color={scenario === 'base' ? 'red' : 'green'} />
+                        <KPICard title="Capex Efficiency" value={currentData.kpi.efficiency} icon={IconDollarSign} trend={scenario === 'optimized' ? "+12% Gain" : "Overrun"} color={scenario === 'base' ? 'red' : 'green'} />
+                        <KPICard title="Time-to-Market" value={currentData.kpi.time} icon={IconActivity} trend={scenario === 'optimized' ? "-8 Mo" : "Delayed"} color={scenario === 'base' ? 'amber' : 'green'} />
+                        <KPICard title="Proj. Revenue (FY26)" value={currentData.kpi.pnl} icon={IconTrendingUp} trend="+15% YoY" color="blue" />
+                    </div>
+
+                    {/* --- MAIN DASHBOARD GRID --- */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[600px]">
+                        
+                        {/* 1. GEOSPATIAL MAP (Left - 4 Cols) */}
+                        <div className="lg:col-span-4 glass-panel rounded-2xl p-4 flex flex-col relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="font-bold text-white flex items-center gap-2"><IconMapPin size={16}/> Portfolio Map</h3>
+                                <span className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400 border border-slate-700">Interactive</span>
+                            </div>
+                            <div className="flex-grow relative">
+                                <IndiaMap onLocationSelect={setSelectedLocation} selectedLoc={selectedLocation} />
+                            </div>
+                            <div className="mt-2 text-center">
+                                <p className="text-xs text-slate-400">Selected Hub: <span className="text-white font-bold">{selectedLocation.name}</span></p>
+                            </div>
+                        </div>
+
+                        {/* 2. CENTER COMMAND (Middle - 5 Cols) */}
+                        <div className="lg:col-span-5 flex flex-col gap-6">
+                            
+                            {/* Financial Chart */}
+                            <div className="glass-panel rounded-2xl p-5 h-1/2 flex flex-col">
+                                <h3 className="font-bold text-white text-sm mb-4">Financial Trajectory (10-Year)</h3>
+                                <div className="flex-grow">
+                                    <ChartComponent 
+                                        type="line" 
+                                        data={financialChartData} 
+                                        options={{
+                                            plugins: { legend: { display: false } },
+                                            scales: {
+                                                x: { grid: { display: false }, ticks: { color: '#64748b' } },
+                                                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
+                                            }
+                                        }} 
+                                        id="finChart" 
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Deep Dive Panel (Dynamic) */}
+                            <div className="glass-panel rounded-2xl p-5 h-1/2 flex flex-col relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <IconActivity size={100} />
+                                </div>
+                                <div className="flex justify-between items-start mb-2 z-10">
+                                    <div>
+                                        <h3 className="font-bold text-xl text-white">{selectedLocation.name} Hub</h3>
+                                        <div className={`text-xs px-2 py-0.5 rounded inline-block mt-1 font-bold ${selectedLocation.status === 'red' ? 'bg-red-500/20 text-red-400' : selectedLocation.status === 'green' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                            STATUS: {selectedLocation.status.toUpperCase()}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-white">{selectedLocation.mw}</div>
+                                        <div className="text-[10px] text-slate-400">Planned Capacity</div>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-slate-400 mb-4 z-10 border-l-2 border-slate-600 pl-2 italic">
+                                    "{selectedLocation.details}"
+                                </p>
+                                <div className="flex-grow z-10">
+                                    <ChartComponent 
+                                        type="radar" 
+                                        data={radarData} 
+                                        options={{
+                                            scales: { r: { 
+                                                angleLines: { color: 'rgba(255,255,255,0.1)' },
+                                                grid: { color: 'rgba(255,255,255,0.1)' },
+                                                pointLabels: { color: '#94a3b8', font: { size: 10 } },
+                                                ticks: { display: false }
+                                            }}
+                                        }} 
+                                        id="radarChart" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 3. RIGHT METRICS (Right - 3 Cols) */}
+                        <div className="lg:col-span-3 flex flex-col gap-6">
+                            
+                            {/* Capex Distribution */}
+                            <div className="glass-panel rounded-2xl p-5 h-1/2 flex flex-col">
+                                <h3 className="font-bold text-white text-sm mb-4">Capital Allocation</h3>
+                                <div className="flex-grow relative">
+                                    <ChartComponent 
+                                        type="doughnut" 
+                                        data={capexData} 
+                                        options={{
+                                            cutout: '70%',
+                                            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } } }
+                                        }} 
+                                        id="capexChart" 
+                                    />
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -translate-y-[20px] text-center pointer-events-none">
+                                        <div className="text-xs text-slate-500">Total</div>
+                                        <div className="text-lg font-bold text-white">₹30k Cr</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Risk Monitor */}
+                            <div className="glass-panel rounded-2xl p-5 h-1/2 overflow-y-auto">
+                                <h3 className="font-bold text-white text-sm mb-4">Top Threats</h3>
+                                <div className="space-y-3">
+                                    <RiskBar label="Regulatory" val={currentData.risk.regulatory} color="red" />
+                                    <RiskBar label="Supply Chain" val={currentData.risk.supply} color="amber" />
+                                    <RiskBar label="Talent Gap" val={45} color="blue" />
+                                    <RiskBar label="Tech Obsolescence" val={30} color="slate" />
+                                </div>
+                                <div className="mt-4 p-3 bg-slate-800/50 rounded border border-slate-700 text-xs text-slate-400">
+                                    <span className="font-bold text-white">Insight:</span> Optimization plan reduces Regulatory risk by 40% via pre-approval stakeholder engagement.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Helper Components ---
+        
+        const KPICard = ({ title, value, icon: Icon, trend, color }) => {
+            const colors = {
+                red: 'text-red-400 bg-red-500/10 border-red-500/20',
+                green: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+                amber: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+                blue: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+            };
+            return (
+                <div className={`glass-panel p-4 rounded-xl border ${colors[color].split(' ')[2]} flex flex-col justify-between`}>
+                    <div className="flex justify-between items-start">
+                        <span className="text-slate-400 text-xs uppercase font-semibold tracking-wider">{title}</span>
+                        <div className={`p-1.5 rounded-lg ${colors[color].split(' ')[1]} ${colors[color].split(' ')[0]}`}>
+                            <Icon size={16} />
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-2xl font-bold text-white mt-1">{value}</div>
+                        <div className={`text-xs font-medium mt-1 ${colors[color].split(' ')[0]}`}>{trend}</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const RiskBar = ({ label, val, color }) => {
+            const bg = { red: 'bg-red-500', amber: 'bg-amber-500', blue: 'bg-blue-500', slate: 'bg-slate-500' };
+            return (
+                <div>
+                    <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-300">{label}</span>
+                        <span className="text-slate-500">{val}% Prob.</span>
+                    </div>
+                    <div className="w-full bg-slate-700/50 rounded-full h-1.5">
+                        <div className={`h-1.5 rounded-full transition-all duration-1000 ${bg[color]}`} style={{width: `${val}%`}}></div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>

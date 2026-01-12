@@ -54,15 +54,16 @@
             stroke-width: 2px;
             filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
         }
-        /* Timeline Custom Scrollbar */
-        .timeline-scroll::-webkit-scrollbar {
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
             height: 6px;
+            width: 6px;
         }
-        .timeline-scroll::-webkit-scrollbar-track {
+        .custom-scroll::-webkit-scrollbar-track {
             background: rgba(30, 41, 59, 0.5);
             border-radius: 10px;
         }
-        .timeline-scroll::-webkit-scrollbar-thumb {
+        .custom-scroll::-webkit-scrollbar-thumb {
             background: #3b82f6;
             border-radius: 10px;
         }
@@ -73,6 +74,15 @@
         }
         .animate-float {
             animation: float 6s ease-in-out infinite;
+        }
+        .matrix-cell {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .matrix-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
     </style>
 </head>
@@ -93,11 +103,15 @@
         const IconShield = ({size=20, className}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
         const IconGrid = ({size=20, className}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
         const IconFileText = ({size=20, className}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>;
+        const IconCheckCircle = ({size=20, className}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+        const IconInfo = ({size=20, className}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
 
-        // --- Data Extraction from PDF ---
+        // --- Data Extraction & Merged Data ---
         const chronicleData = {
             revenue: "₹408 Cr",
             committedOrderBook: "210 MW",
+            operationalMW: "36.6 MW",
+            targetMW: "1 GW",
             financing: {
                 totalDebt: "$1.65B",
                 milestones: [
@@ -110,24 +124,106 @@
                 { name: "Trade Castle Tech Park", amount: "₹234 Cr", purpose: "Land Bank" }
             ],
             timeline: [
-                { year: "2021", month: "Feb", title: "JV Genesis", desc: "50:50 JV formed between Adani & EdgeConneX. Goal: 1 GW by 2030." },
-                { year: "2022", month: "Oct", title: "Chennai Live", desc: "17 MW Phase 1 commissioned. IGBC Platinum design." },
+                { year: "2021", month: "Feb", title: "JV Genesis", desc: "50:50 JV formed. Goal: 1 GW by 2030." },
+                { year: "2022", month: "Oct", title: "Chennai Live", desc: "17 MW Phase 1 commissioned. IGBC Platinum." },
                 { year: "2023", month: "Jun", title: "First Close", desc: "$213M Construction Financing secured." },
-                { year: "2023", month: "Dec", title: "Resilience Test", desc: "Cyclone Michaung hits Chennai. 100% Uptime maintained." },
-                { year: "2024", month: "Apr", title: "Mega Funding", desc: "$1.44B Sustainability-Linked Financing raised." },
-                { year: "2025", month: "Jan", title: "Noida Live", desc: "10 MW Phase 1 operational in strategic NCR market." },
-                { year: "2025", month: "Oct", title: "AI Pivot", desc: "Google Partnership for 1 GW Vizag AI Hub announced." },
-                { year: "2025", month: "Dec", title: "Land Banking", desc: "₹600 Cr deployed for acquisitions (Girdhari & Trade Castle)." },
-                { year: "2026", month: "Jan", title: "Profitability", desc: "Revenue hits ₹408 Cr. Transition to profit realization." }
+                { year: "2024", month: "Apr", title: "Mega Funding", desc: "$1.44B Sustainability-Linked Financing." },
+                { year: "2025", month: "Jan", title: "Noida Live", desc: "10 MW Phase 1 operational in NCR." },
+                { year: "2025", month: "Oct", title: "AI Pivot", desc: "Google Partnership for 1 GW Vizag AI Hub." },
+                { year: "2025", month: "Dec", title: "Expansion", desc: "₹600 Cr deployed for acquisitions." },
+                { year: "2026", month: "Jan", title: "Status Quo", desc: "36.6 MW Operational. Rev ₹408 Cr." }
+            ]
+        };
+
+        // ENHANCED MATRIX DATA WITH EVIDENCE FROM PDFS
+        const pmbokMatrix = {
+            columns: ["Stakeholder", "Team", "Dev", "Planning", "Work", "Delivery", "Measure", "Uncertainty"],
+            rows: [
+                { 
+                    id: 1, name: "Stewardship", 
+                    details: "Integrity, care, and trustworthiness. 100% RE commitment.",
+                    score: 95, // For Radar
+                    cells: [
+                        { status: 3, evidence: "Google/MS Net Zero Alignment" },
+                        { status: 3, evidence: "Safety First Culture (VR Training)" },
+                        { status: 2, evidence: "Green by Design (IGBC Platinum)" },
+                        { status: 3, evidence: "Sustainability-Linked Loan ($1.44B)" },
+                        { status: 3, evidence: "Vendor HSE Audits" },
+                        { status: 3, evidence: "High-Grade Steel Specs" },
+                        { status: 3, evidence: "Real-time PUE Tracking" },
+                        { status: 3, evidence: "Land Banking for Future" }
+                    ]
+                },
+                { 
+                    id: 2, name: "Collaboration", 
+                    details: "Cross-functional synergy between Adani Infra & EdgeConneX Tech.",
+                    score: 85,
+                    cells: [
+                        { status: 3, evidence: "Joint Board Structure" },
+                        { status: 3, evidence: "Cross-pollination (India/Global)" },
+                        { status: 3, evidence: "Agile Dev Teams" },
+                        { status: 3, evidence: "DABS Digital Collab Tool" },
+                        { status: 3, evidence: "Energy Solutions Team" },
+                        { status: 2, evidence: "Vendor Recognition Awards" },
+                        { status: 3, evidence: "Safety Innovation Awards" },
+                        { status: 2, evidence: "Foxhole Mentality (Cyclone)" }
+                    ]
+                },
+                { 
+                    id: 4, name: "Value Focus", 
+                    details: "Delivering business value (Revenue) & social value (Digital India).",
+                    score: 90,
+                    cells: [
+                        { status: 3, evidence: "100% Uptime for Clients" },
+                        { status: 3, evidence: "Value Engineering (Steel)" },
+                        { status: 3, evidence: "Build-to-Suit Model" },
+                        { status: 3, evidence: "Low Latency (Vizag Loc)" },
+                        { status: 3, evidence: "Land Asset Acquisition" },
+                        { status: 3, evidence: "Premium Green Pricing" },
+                        { status: 3, evidence: "Financial Closure ($1.65B)" },
+                        { status: 3, evidence: "Long-term PPA Lock-in" }
+                    ]
+                },
+                { 
+                    id: 9, name: "Complexity", 
+                    details: "Navigating regulatory, technical, and geographical webs.",
+                    score: 65,
+                    cells: [
+                        { status: 3, evidence: "State Govt Liaisons" },
+                        { status: 2, evidence: "Matrix Org Management" },
+                        { status: 3, evidence: "Program Mgmt Office" },
+                        { status: 3, evidence: "Special Purpose Vehicles (SPV)" },
+                        { status: 3, evidence: "Liquid Cooling Integration" },
+                        { status: 1, evidence: "Global Supply Chain" },
+                        { status: 1, evidence: "Scope 3 Emissions Tracking" },
+                        { status: 3, evidence: "Private Substations" }
+                    ]
+                },
+                { 
+                    id: 10, name: "Risk Opt.", 
+                    details: "Proactive risk identification and mitigation strategies.",
+                    score: 88,
+                    cells: [
+                        { status: 3, evidence: "ESG Compliance" },
+                        { status: 3, evidence: "AI Safety Analytics" },
+                        { status: 3, evidence: "Future Ready Design (300kW)" },
+                        { status: 3, evidence: "Accordion Debt Facility" },
+                        { status: 3, evidence: "Tier-1 Contractors (L&T)" },
+                        { status: 3, evidence: "Pre-Leased Assets" },
+                        { status: 3, evidence: "NOC Central Monitoring" },
+                        { status: 3, evidence: "BCP (Cyclone Tested)" }
+                    ]
+                }
+                // (Simplified to key principles for visual clarity in heatmap, but radar uses all 12 conceptually)
             ]
         };
 
         const locations = [
-            { id: 1, name: "Noida", x: 40, y: 25, status: "green", mw: "10/50 MW", details: "Ph-1 Operational. Safety Gold Award.", radar: [90, 85, 95, 90, 80] },
+            { id: 1, name: "Noida", x: 40, y: 25, status: "green", mw: "10/50 MW", details: "Ph-1 Operational (10MW).", radar: [90, 85, 95, 90, 80] },
             { id: 2, name: "Mumbai", x: 25, y: 55, status: "amber", mw: "80 MW", details: "Grid power negotiations in final stage.", radar: [60, 70, 50, 40, 95] },
-            { id: 3, name: "Hyderabad", x: 45, y: 60, status: "green", mw: "9.6/40 MW", details: "5-Star British Safety Council Rating.", radar: [95, 90, 95, 90, 85] },
+            { id: 3, name: "Hyderabad", x: 45, y: 60, status: "green", mw: "9.6/40 MW", details: "Ph-1 Operational (9.6MW).", radar: [95, 90, 95, 90, 85] },
             { id: 4, name: "Visakhapatnam", x: 55, y: 65, status: "blue", mw: "1 GW", details: "Google AI Hub. Liquid cooling ready.", radar: [20, 100, 60, 90, 100] },
-            { id: 5, name: "Chennai", x: 45, y: 80, status: "green", mw: "17/33 MW", details: "100% Uptime (Cyclone Tested).", radar: [100, 95, 100, 100, 90] }
+            { id: 5, name: "Chennai", x: 45, y: 80, status: "green", mw: "17/33 MW", details: "Ph-1 Operational (17MW).", radar: [100, 95, 100, 100, 90] }
         ];
 
         // --- Chart Component ---
@@ -140,14 +236,11 @@
                     if (chartRef.current) chartRef.current.destroy();
                     const ctx = canvasRef.current.getContext('2d');
                     
-                    // Add gradient support if needed
                     let chartData = { ...data };
                     if (type === 'line' || type === 'bar') {
                         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
                         gradient.addColorStop(0, type === 'line' ? 'rgba(59, 130, 246, 0.5)' : 'rgba(16, 185, 129, 0.8)');
                         gradient.addColorStop(1, type === 'line' ? 'rgba(59, 130, 246, 0.0)' : 'rgba(16, 185, 129, 0.2)');
-                        
-                        // Apply to first dataset if not specified
                         if(chartData.datasets[0] && !chartData.datasets[0].backgroundColor) {
                              chartData.datasets[0].backgroundColor = gradient;
                         }
@@ -179,12 +272,11 @@
         // --- Sub-Views ---
 
         const DashboardOverview = ({ onLocationSelect, selectedLoc }) => {
-             // Financial Trajectory Chart
              const finData = {
-                labels: ['FY23', 'FY24', 'FY25', 'FY26(P)', 'FY27(P)'],
+                labels: ['FY23', 'FY24', 'FY25', 'FY26(P)'],
                 datasets: [{
                     label: 'Revenue (₹ Cr)',
-                    data: [50, 180, 408, 850, 1600],
+                    data: [50, 180, 408, 850],
                     borderColor: '#3b82f6',
                     fill: true,
                     tension: 0.4
@@ -206,34 +298,34 @@
                     </div>
 
                     {/* Metrics & Deep Dive */}
-                    <div className="col-span-12 lg:col-span-7 flex flex-col gap-6 h-full overflow-y-auto pr-2">
+                    <div className="col-span-12 lg:col-span-7 flex flex-col gap-6 h-full overflow-y-auto pr-2 custom-scroll">
                         {/* KPI Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="glass-panel p-4 rounded-xl border-l-4 border-blue-500">
-                                <div className="text-slate-400 text-xs uppercase font-bold">Revenue FY25</div>
-                                <div className="text-2xl font-bold text-white mt-1">₹408 Cr</div>
-                                <div className="text-xs text-green-400 flex items-center gap-1 mt-1"><IconTrendingUp size={12}/> +126% YoY</div>
+                                <div className="text-slate-400 text-xs uppercase font-bold">Total Investment</div>
+                                <div className="text-xl font-bold text-white mt-1">~$5.0 Bn</div>
+                                <div className="text-[10px] text-slate-400 mt-1">Committed</div>
                             </div>
                             <div className="glass-panel p-4 rounded-xl border-l-4 border-emerald-500">
-                                <div className="text-slate-400 text-xs uppercase font-bold">Committed Cap</div>
-                                <div className="text-2xl font-bold text-white mt-1">210 MW</div>
-                                <div className="text-xs text-slate-400 mt-1">Order Book</div>
+                                <div className="text-slate-400 text-xs uppercase font-bold">Operational Cap</div>
+                                <div className="text-xl font-bold text-white mt-1">36.6 MW</div>
+                                <div className="text-[10px] text-green-400 mt-1">Live Jan '26</div>
                             </div>
                              <div className="glass-panel p-4 rounded-xl border-l-4 border-amber-500">
-                                <div className="text-slate-400 text-xs uppercase font-bold">Debt Raised</div>
-                                <div className="text-2xl font-bold text-white mt-1">$1.65 Bn</div>
-                                <div className="text-xs text-green-400 mt-1">Fully Funded</div>
+                                <div className="text-slate-400 text-xs uppercase font-bold">Target 2030</div>
+                                <div className="text-xl font-bold text-white mt-1">1 GW</div>
+                                <div className="text-[10px] text-amber-300 mt-1">Vision</div>
                             </div>
                              <div className="glass-panel p-4 rounded-xl border-l-4 border-indigo-500">
-                                <div className="text-slate-400 text-xs uppercase font-bold">Safety Rating</div>
-                                <div className="text-2xl font-bold text-white mt-1">5-Star</div>
-                                <div className="text-xs text-indigo-300 mt-1">British Council</div>
+                                <div className="text-slate-400 text-xs uppercase font-bold">Capex Efficiency</div>
+                                <div className="text-xl font-bold text-white mt-1">₹40 Cr</div>
+                                <div className="text-[10px] text-indigo-300 mt-1">Per MW</div>
                             </div>
                         </div>
 
                         {/* Financial Growth Chart */}
                         <div className="glass-panel rounded-xl p-5 h-64">
-                             <h3 className="font-bold text-white text-sm mb-2">Revenue Velocity</h3>
+                             <h3 className="font-bold text-white text-sm mb-2">Revenue Growth Trajectory</h3>
                              <ChartComponent type="line" data={finData} options={{plugins:{legend:{display:false}}}} id="revChart" />
                         </div>
 
@@ -271,46 +363,192 @@
             );
         };
 
+        // --- NEW ENHANCED PMBOK MATRIX VIEW ---
+        const AlignmentMatrixView = () => {
+            const [activeCell, setActiveCell] = useState(null);
+
+            // Calculate aggregated domain scores
+            const domainScores = pmbokMatrix.columns.map((col, cIdx) => {
+                let sum = 0;
+                pmbokMatrix.rows.forEach(row => {
+                    sum += row.cells[cIdx].status;
+                });
+                return Math.round((sum / (pmbokMatrix.rows.length * 3)) * 100);
+            });
+
+            const radarData = {
+                labels: pmbokMatrix.rows.map(r => r.name),
+                datasets: [{
+                    label: 'Principle Maturity Score',
+                    data: pmbokMatrix.rows.map(r => r.score),
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: '#10b981',
+                    pointBackgroundColor: '#fff',
+                }]
+            };
+
+             const domainData = {
+                labels: pmbokMatrix.columns,
+                datasets: [{
+                    label: 'Domain Execution Strength (%)',
+                    data: domainScores,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4
+                }]
+            };
+
+            return (
+                <div className="grid grid-cols-12 gap-6 h-full overflow-hidden">
+                    
+                    {/* Left: Interactive Heatmap Matrix */}
+                    <div className="col-span-8 glass-panel rounded-2xl p-6 flex flex-col overflow-hidden">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <IconCheckCircle className="text-purple-400"/> PMBOK Maturity Heatmap
+                                </h3>
+                                <p className="text-xs text-slate-400 mt-1">Click cells to view specific evidence from the reports.</p>
+                            </div>
+                            <div className="flex gap-4 text-[10px]">
+                                <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-slate-700 border border-slate-600"></span> Initial</div>
+                                <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-500/30 border border-blue-500/50"></span> Emerging</div>
+                                <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-500/30 border border-green-500/50"></span> Applied</div>
+                                <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-purple-500/30 border border-purple-500/50"></span> Optimized</div>
+                            </div>
+                        </div>
+
+                        <div className="flex-grow overflow-auto custom-scroll">
+                            <table className="w-full text-left border-separate border-spacing-1">
+                                <thead>
+                                    <tr>
+                                        <th className="p-2 text-[10px] text-slate-500 font-bold">PRINCIPLE</th>
+                                        {pmbokMatrix.columns.map((col, i) => (
+                                            <th key={i} className="p-2 text-[10px] text-slate-400 font-bold text-center uppercase">{col}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pmbokMatrix.rows.map((row, i) => (
+                                        <tr key={i}>
+                                            <td className="p-3 text-xs font-bold text-slate-300 bg-slate-800/30 rounded-l cursor-help" title={row.details}>
+                                                {row.id}. {row.name}
+                                                <IconInfo size={10} className="inline ml-1 text-slate-600"/>
+                                            </td>
+                                            {row.cells.map((cell, j) => (
+                                                <td key={j} onClick={() => setActiveCell({principle: row.name, domain: pmbokMatrix.columns[j], ...cell})}>
+                                                    <div className={`matrix-cell w-full h-10 rounded flex items-center justify-center text-[10px] font-bold border transition-all 
+                                                        ${cell.status === 3 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40' : 
+                                                          cell.status === 2 ? 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/40' : 
+                                                          cell.status === 1 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/40' : 
+                                                          'bg-slate-700/50 text-slate-500 border-slate-700'}`}>
+                                                        {cell.status === 3 ? 'OPT' : cell.status === 2 ? 'APP' : 'EMG'}
+                                                    </div>
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Right: Analytics & Details Panel */}
+                    <div className="col-span-4 flex flex-col gap-6 h-full overflow-hidden">
+                        
+                        {/* Principle Radar Chart */}
+                        <div className="glass-panel rounded-2xl p-4 h-1/3 flex flex-col">
+                            <h4 className="text-sm font-bold text-white mb-2">Principle Maturity Profile</h4>
+                            <div className="flex-grow">
+                                <ChartComponent 
+                                    type="radar" 
+                                    data={radarData} 
+                                    options={{
+                                        scales: { r: { 
+                                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                                            grid: { color: 'rgba(255,255,255,0.1)' },
+                                            pointLabels: { color: '#94a3b8', font: { size: 9 } },
+                                            ticks: { display: false, max: 100 }
+                                        }}
+                                    }} 
+                                    id="matrixRadar" 
+                                />
+                            </div>
+                        </div>
+
+                         {/* Domain Strength Bar Chart */}
+                        <div className="glass-panel rounded-2xl p-4 h-1/4 flex flex-col">
+                            <h4 className="text-sm font-bold text-white mb-2">Domain Execution</h4>
+                             <div className="flex-grow">
+                                <ChartComponent 
+                                    type="bar" 
+                                    data={domainData} 
+                                    options={{
+                                        indexAxis: 'y',
+                                        plugins: { legend: { display: false } },
+                                        scales: { x: { display: false }, y: { ticks: { color: '#94a3b8', font: { size: 9 } } } }
+                                    }} 
+                                    id="domainBar" 
+                                />
+                            </div>
+                        </div>
+
+                        {/* Detail Inspector Panel */}
+                        <div className="glass-panel rounded-2xl p-4 flex-grow bg-slate-800/50 border border-blue-500/20 relative overflow-hidden">
+                            {activeCell ? (
+                                <div className="animate-fade-in h-full flex flex-col justify-center">
+                                    <div className="text-[10px] uppercase text-blue-400 font-bold mb-1 tracking-wider">
+                                        {activeCell.principle} × {activeCell.domain}
+                                    </div>
+                                    <h3 className="text-lg font-bold text-white mb-2 leading-tight">"{activeCell.evidence}"</h3>
+                                    <div className="w-full bg-slate-700 h-1 rounded-full overflow-hidden mt-2">
+                                        <div className={`h-full ${activeCell.status === 3 ? 'bg-purple-500 w-full' : activeCell.status === 2 ? 'bg-green-500 w-2/3' : 'bg-blue-500 w-1/3'}`}></div>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-2">
+                                        Maturity Level: <span className="text-white font-bold">{activeCell.status === 3 ? 'Optimized' : activeCell.status === 2 ? 'Applied' : 'Emerging'}</span>
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center text-slate-500">
+                                    <IconCheckCircle size={32} className="mb-2 opacity-50"/>
+                                    <p className="text-xs">Select any cell in the matrix<br/>to reveal evidence.</p>
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                </div>
+            );
+        };
+
         const FinancialView = () => {
              const capitalStack = {
                 labels: ['Construction Finance', 'Sustain. Loan', 'Equity/Rev', 'Land Acquisitions'],
                 datasets: [{
                     label: 'USD Millions (Approx)',
-                    data: [213, 1440, 50, -72], // Land acq shown as negative or overlay? Let's keep distinct.
+                    data: [213, 1440, 50, -72], 
                     backgroundColor: ['#64748b', '#22c55e', '#3b82f6', '#ef4444'],
                     borderRadius: 4
                 }]
             };
             
             const acqData = {
-                labels: ['Girdhari Build Estate', 'Trade Castle Tech', 'Other/Future'],
+                labels: ['Girdhari Build Estate', 'Trade Castle Tech', 'Other'],
                 datasets: [{
-                    data: [366, 234, 150], // approx buffer
+                    data: [366, 234, 150], 
                     backgroundColor: ['#f59e0b', '#8b5cf6', '#334155'],
                     borderWidth: 0
                 }]
             };
 
             return (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-y-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-y-auto custom-scroll">
                     <div className="glass-panel rounded-2xl p-6">
                         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><IconDollarSign className="text-green-400"/> Capital Stack & Deployment</h3>
                         <p className="text-sm text-slate-400 mb-6">
                             AdaniConneX has secured India's largest data center financing ($1.44B) linked to sustainability KPIs. 
-                            This "Accordion" structure minimizes cost of carry.
                         </p>
                         <div className="h-64">
                             <ChartComponent type="bar" data={capitalStack} options={{}} id="capStackChart" />
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4">
-                            <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                                <div className="text-xs text-slate-400">Total Debt Raised</div>
-                                <div className="text-xl font-bold text-white">$1.65 Billion</div>
-                            </div>
-                            <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                                <div className="text-xs text-slate-400">Avg Cost Efficiency</div>
-                                <div className="text-xl font-bold text-green-400">Optimized</div>
-                            </div>
                         </div>
                     </div>
 
@@ -322,13 +560,10 @@
                             </div>
                             <div className="w-1/2 space-y-4">
                                 <div className="text-sm text-slate-300">
-                                    <span className="font-bold text-amber-400">₹366 Cr</span> deployed for Girdhari Build Estate (Noida Expansion).
+                                    <span className="font-bold text-amber-400">₹366 Cr</span> deployed for Girdhari Build Estate.
                                 </div>
                                 <div className="text-sm text-slate-300">
                                     <span className="font-bold text-purple-400">₹234 Cr</span> deployed for Trade Castle Tech Park.
-                                </div>
-                                <div className="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-700">
-                                    *Land banking strategy insulates against future price inflation and zoning risks.
                                 </div>
                             </div>
                         </div>
@@ -339,11 +574,11 @@
 
         const OperationsView = () => {
              const funnelData = {
-                labels: ['Vision 2030', 'Committed', 'Under Const.', 'Operational'],
+                labels: ['Vision 2030', 'Committed', 'Operational'],
                 datasets: [{
                     label: 'Capacity (MW)',
-                    data: [1000, 210, 150, 36.6], // Approx op capacity
-                    backgroundColor: ['#1e293b', '#3b82f6', '#f59e0b', '#22c55e'],
+                    data: [1000, 210, 36.6], 
+                    backgroundColor: ['#1e293b', '#3b82f6', '#22c55e'],
                     borderRadius: 4,
                     barPercentage: 0.6
                 }]
@@ -352,15 +587,9 @@
             return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
                     <div className="glass-panel rounded-2xl p-6">
-                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><IconServer className="text-blue-400"/> Capacity Realization Funnel</h3>
+                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><IconServer className="text-blue-400"/> Capacity Realization</h3>
                         <div className="h-64">
                             <ChartComponent type="bar" data={funnelData} options={{indexAxis: 'y'}} id="funnelChart" />
-                        </div>
-                         <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
-                            <h4 className="text-blue-300 font-bold text-sm mb-1">Order Book Strength</h4>
-                            <p className="text-xs text-slate-400">
-                                210 MW committed capacity ensures long-term revenue visibility. The "Build-to-Suit" model with Hyperscalers (e.g., Google) de-risks the 1 GW expansion.
-                            </p>
                         </div>
                     </div>
                      <div className="glass-panel rounded-2xl p-6 flex flex-col justify-center items-center text-center">
@@ -368,14 +597,18 @@
                             <IconShield size={64} className="text-indigo-400"/>
                         </div>
                         <h3 className="text-2xl font-bold text-white">Operational Excellence</h3>
-                        <div className="mt-6 grid grid-cols-2 gap-8 w-full">
+                        <div className="mt-6 grid grid-cols-3 gap-4 w-full px-8">
                             <div>
-                                <div className="text-4xl font-bold text-white">100%</div>
-                                <div className="text-sm text-slate-400">Uptime (Cyclone Michaung)</div>
+                                <div className="text-2xl font-bold text-white">36.6</div>
+                                <div className="text-[10px] text-slate-400">MW Live</div>
                             </div>
                             <div>
-                                <div className="text-4xl font-bold text-white">5-Star</div>
-                                <div className="text-sm text-slate-400">BSC Safety Rating</div>
+                                <div className="text-2xl font-bold text-white">100%</div>
+                                <div className="text-[10px] text-slate-400">Uptime</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-white">&lt;1.45</div>
+                                <div className="text-[10px] text-slate-400">PUE</div>
                             </div>
                         </div>
                     </div>
@@ -387,24 +620,17 @@
             return (
                 <div className="glass-panel rounded-2xl p-6 h-full flex flex-col">
                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><IconClock className="text-pink-400"/> Project Chronicle: The Journey to Profitability</h3>
-                    <div className="flex-grow overflow-x-auto overflow-y-hidden timeline-scroll relative">
-                        {/* Timeline Line */}
+                    <div className="flex-grow overflow-x-auto overflow-y-hidden custom-scroll relative">
                         <div className="absolute top-1/2 left-0 w-[2000px] h-1 bg-slate-700 -translate-y-1/2 rounded-full"></div>
-                        
                         <div className="flex gap-8 items-center h-full min-w-[1800px] px-8">
                             {chronicleData.timeline.map((event, idx) => (
                                 <div key={idx} className="relative group w-64 flex-shrink-0">
-                                    {/* Dot */}
                                     <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-slate-900 border-4 border-blue-500 rounded-full -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300 group-hover:scale-150 group-hover:border-white"></div>
-                                    
-                                    {/* Content Card (Alternate Top/Bottom) */}
                                     <div className={`absolute left-0 w-full p-4 glass-panel rounded-xl border border-slate-600/50 transition-all duration-300 group-hover:bg-blue-900/40 group-hover:border-blue-400 ${idx % 2 === 0 ? 'bottom-[60%] mb-4' : 'top-[60%] mt-4'}`}>
                                         <div className="text-xs font-bold text-blue-400 mb-1">{event.year} • {event.month}</div>
                                         <h4 className="text-sm font-bold text-white mb-2">{event.title}</h4>
                                         <p className="text-[10px] text-slate-300 leading-relaxed">{event.desc}</p>
                                     </div>
-
-                                    {/* Connecting Line */}
                                     <div className={`absolute left-1/2 w-0.5 bg-blue-500/50 h-[50px] -translate-x-1/2 ${idx % 2 === 0 ? 'bottom-1/2 mb-2' : 'top-1/2 mt-2'}`}></div>
                                 </div>
                             ))}
@@ -442,6 +668,7 @@
         const App = () => {
             const [activeView, setActiveView] = useState('overview');
             const [selectedLocation, setSelectedLocation] = useState(locations[2]);
+            const [selectedDoc, setSelectedDoc] = useState('THE BIBLE_ How AdaniConneX came into existence, ri.pdf');
 
             const renderContent = () => {
                 switch(activeView) {
@@ -449,12 +676,23 @@
                     case 'financials': return <FinancialView />;
                     case 'operations': return <OperationsView />;
                     case 'chronicle': return <ChronicleView />;
+                    case 'matrix': return <AlignmentMatrixView />;
                     case 'pdf': return (
                         <div className="w-full h-full glass-panel rounded-2xl overflow-hidden flex flex-col">
-                             <div className="bg-slate-800/50 p-2 border-b border-slate-700 flex justify-between items-center">
-                                <span className="text-xs text-slate-400">AdaniConneX Project Chronicle Report.pdf</span>
+                             <div className="bg-slate-800/50 p-3 border-b border-slate-700 flex justify-between items-center">
+                                <span className="text-xs font-bold text-white flex items-center gap-2">
+                                    <IconFileText size={16}/> Document Viewer
+                                </span>
+                                <select 
+                                    className="bg-slate-700 text-xs text-white p-1 rounded border border-slate-600 outline-none"
+                                    value={selectedDoc}
+                                    onChange={(e) => setSelectedDoc(e.target.value)}
+                                >
+                                    <option value="THE BIBLE_ How AdaniConneX came into existence, ri.pdf">THE BIBLE: AdaniConneX Existence</option>
+                                    <option value="AdaniConneX Project Chronicle Report.pdf">Project Chronicle Report</option>
+                                </select>
                             </div>
-                            <iframe src="AdaniConneX Project Chronicle Report.pdf" className="w-full h-full border-none bg-slate-900" title="PDF"></iframe>
+                            <iframe src={selectedDoc} className="w-full h-full border-none bg-slate-900" title="PDF"></iframe>
                         </div>
                     );
                     default: return <DashboardOverview onLocationSelect={setSelectedLocation} selectedLoc={selectedLocation} />;
@@ -481,11 +719,12 @@
                         </div>
                         <nav className="flex-grow space-y-1 mt-4">
                             <NavItem id="overview" label="Overview" icon={IconGrid} />
-                            <NavItem id="financials" label="Financials & Capital" icon={IconDollarSign} />
-                            <NavItem id="operations" label="Operations & Capacity" icon={IconServer} />
-                            <NavItem id="chronicle" label="Project Chronicle" icon={IconClock} />
+                            <NavItem id="financials" label="Financials" icon={IconDollarSign} />
+                            <NavItem id="operations" label="Operations" icon={IconServer} />
+                            <NavItem id="matrix" label="PMBOK Matrix" icon={IconCheckCircle} />
+                            <NavItem id="chronicle" label="Chronicle" icon={IconClock} />
                             <div className="my-4 border-t border-slate-800 mx-4"></div>
-                            <NavItem id="pdf" label="Report Archives" icon={IconFileText} />
+                            <NavItem id="pdf" label="Digital Archives" icon={IconFileText} />
                         </nav>
                         <div className="p-4">
                             <div className="glass-panel p-3 rounded-xl">
@@ -501,7 +740,7 @@
                     {/* Main Content */}
                     <div className="flex-grow flex flex-col h-screen overflow-hidden">
                         <header className="h-16 border-b border-slate-800 flex items-center justify-between px-8 bg-[#0b0f19]">
-                            <h2 className="text-lg font-bold text-white capitalize">{activeView === 'pdf' ? 'Digital Archives' : activeView} Dashboard</h2>
+                            <h2 className="text-lg font-bold text-white capitalize">{activeView === 'pdf' ? 'Archives' : activeView} Dashboard</h2>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2 text-xs text-slate-400">
                                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
